@@ -33,15 +33,17 @@ class Postgres(object):
 					"doctors": {"Argemiro": "Pediatra", "Esteban": "General", "Carla": "Endocrino"}
 				},
 			}
+			doctor_id = 1
 			for key, data in hospitals.items():
 				sql = "INSERT INTO hospitals(hospital_id, hospital_name) values(%s, %s)"
 				values=(key, data['name'])
 				cls.cursor.execute(sql, values)
 
 				for doctor_name, doctor_speciality in data['doctors'].items():
-					sql = "INSERT INTO doctors(hospital_id, doctor_name, speciality) values(%s, %s, %s)"
-					values=( key, doctor_name, doctor_speciality)
+					sql = "INSERT INTO doctors(doctor_id, hospital_id, doctor_name, speciality) values(%s, %s, %s, %s)"
+					values=(doctor_id, key, doctor_name, doctor_speciality)
 					cls.cursor.execute(sql, values)
+					doctor_id += 1
 			
 			cls.conn.commit()
 			print(f"Database seeded with {len(hospitals.keys())} hospitals")
