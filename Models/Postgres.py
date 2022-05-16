@@ -6,8 +6,52 @@ class Postgres(object):
 			cls.instance = super(Postgres, cls).__new__(cls)
 			cls.conn = psycopg2.connect(database="hospitales", user="postgres", password="1234")
 			cls.cursor = cls.conn.cursor()
+			cls.migrate(cls)
 			cls.seed(cls)
 		return cls.instance
+
+	def migrate(cls):
+		migrations = (
+
+			"""
+			CREATE TABLE IF NOT EXISTS public.hospitals
+(
+				hospital_id integer NOT NULL,
+				hospital_name character varying(100) COLLATE pg_catalog."default",
+				CONSTRAINT hospitals_pkey PRIMARY KEY (hospital_id)
+			)
+
+			TABLESPACE pg_default;
+
+			ALTER TABLE IF EXISTS public.hospitals
+				OWNER to postgres;
+
+			""",
+
+			"""
+			CREATE TABLE IF NOT EXISTS public.doctors
+			(
+				doctor_id integer NOT NULL,
+				hospital_id integer NOT NULL,
+				doctor_name character varying(100) COLLATE pg_catalog."default",
+				speciality character varying(100) COLLATE pg_catalog."default",
+				CONSTRAINT doctors_pkey PRIMARY KEY (doctor_id)
+			)
+
+			TABLESPACE pg_default;
+
+			ALTER TABLE IF EXISTS public.doctors
+				OWNER to postgres;
+		
+			""",
+
+		)
+
+		for migration in migrations:
+			cls.cursor.execute(migration)
+
+		cls.conn.commit()
+		print(f"Database migrations executed")
 
 	def seed(cls):
 		# cls.cursor.execute("delete from hospitals")
